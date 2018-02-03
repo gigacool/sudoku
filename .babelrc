@@ -1,0 +1,27 @@
+{
+  "presets": [
+    ["es2017"],
+    "react",
+    "stage-1"
+  ],
+
+  "plugins": [
+    "transform-function-bind"
+  ],
+
+  "env": {
+    "development": {
+      "plugins": [
+        "react-hot-loader/babel"
+      ]
+    },
+    "production": {
+      "presets": []
+    },
+    "test": {
+      "plugins": [
+        ["istanbul", {"exclude": ["**/*.spec.js"]}]
+      ]
+    }
+  }
+}
