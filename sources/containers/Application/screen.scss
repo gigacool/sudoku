@@ -64,6 +64,38 @@ button {
     height: 500px;
     border-radius: 4px;
     box-sizing: border-box;
+
+    .row {
+      $size:488px / 9;
+      display: block;
+      height: $size;
+      box-sizing: border-box;
+
+      &.row-block {
+        border-bottom: solid thick #bbada0;
+        &:last-of-type {
+          border-bottom: none;
+        }
+      }
+
+      .cell {
+        display: inline-block;
+        width: $size;
+        height: $size;
+        text-align: center;
+        line-height: $size;
+        border: solid thin #bbada0;
+        box-sizing: border-box;
+
+        &.cell-block {
+          border-right: solid thick #bbada0;
+          &:last-of-type {
+            border-right: none;
+          }
+        }
+      }
+    }
+
   }
 
 }
