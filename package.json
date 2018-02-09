@@ -4,7 +4,7 @@
   "description": "sudoku application with ui, grid generator based on difficulty level, resolution algorithm, suggestions, etc.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node_modules/.bin/webpack-dev-server"
   },
   "repository": {
     "type": "git",
