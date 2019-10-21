@@ -1,52 +1,56 @@
+import { shuffle, clone } from '../utils/utils';
+
+// ----------------------------------------------------------------------------
+// Default grid parameters
+// ----------------------------------------------------------------------------
 
 let gridSize = 3;
 let range = gridSize * gridSize;
 let width = range;
 let height = range;
 
-
 // ----------------------------------------------------------------------------
-// Init the grid
+// Grid creation
 // ----------------------------------------------------------------------------
-
-const shuffle = (array) => {
-  array.sort(() => { return Math.random() - 0.5; })
-  return array;
-};
-
-function print(grid){
-  for (let row = 0; row < height; row++){
-    console.log(grid[row].join(' | '));
-  }
-  console.log('--')
-}
 
 function createGrid(){
   let grid = [];
   for (let row=0; row < height; row++){
     grid.push(new Array(width).fill(0,0, width));
   }
-  // -------------------------------------------------
-  // Create random seed (prefil first row/column)
-  // -------------------------------------------------
+  // Create random seed (prefil first row)
   for(let i = 0; i < height; i++){
     grid[0][i] = i + 1;
   }
-  for(let j = 0; j < height; j++){
-    let v = grid[0][j];
-    let k = Math.floor(Math.random() * (height - j)) + j;
-    grid[0][j] = grid[0][k];
-    grid[0][k] = v;
-  }
-
-  // -------------------------------------------------
-  // Fill a grid solution
-  // -------------------------------------------------
+  shuffle(grid[0]);
+  // Fill remaining grid to generate a unique solution
   let start = performance.now();
   solve(grid, 1, 0);
+  let mid = performance.now();
+  console.log('grid generated in ', `${mid - start}ms`)
+  emptyGridCells(grid);
   let end = performance.now();
-  console.log('grid generated in ', `${end - start}ms`)
+  console.log('grid generated in ', `${end - mid}ms`)
   return grid;
+}
+
+function solve(grid, row, column){
+  if (column >= width){
+    row++;
+    column=0;
+  }
+  if (row >= height){
+    return true;
+  }
+  let candidateValues = shuffle(legalValues(grid, row, column));
+  for(let i=0; i< candidateValues.length; i++){
+    grid[row][column] = candidateValues[i];
+    if (solve(grid, row, column+1)){
+        return true;
+    }
+  }
+  grid[row][column] = 0;
+  return false;
 }
 
 /** Fin the legal values for a given grid cell*/
@@ -75,9 +79,69 @@ function legalValues(grid, row, column){
   return values; // data are sorted, shuffling them will help with possible bias
 }
 
-function solve(grid, row, column){
+function countSolutions(grid, row = 0, column = 0) {
+  if (column >= width) {
+    row++;
+    column=0;
+  }
+  if (row >= height) {
+    return 1;
+  }
+  if (!grid[row][column]){
+    let candidateValues = legalValues(grid, row, column);
+    let solutions = 0;
+    for(let i=0; i< candidateValues.length; i++){
+      grid[row][column] = candidateValues[i];
+      solutions+= countSolutions(grid, row, column+1);
+    }
+    grid[row][column] = 0;
+    return solutions
+  } 
+  return countSolutions(grid, row, column+1);
+}
+
+function emptyGridCells(grid){
+  let start = performance.now();
+  // TODO - use random on cells that are filed instead of potentially empty ones
+  // work on symetry 
+  for(let i=0; i<1000; i++){
+    let row = Math.floor(Math.random()*width);
+    let column = Math.floor(Math.random()*height);
+    let a = grid[row][column];
+    let b = grid[column][row];
+    grid[row][column] = 0;
+    grid[column][row] = 0;
+    let solutions = countSolutions(grid);
+    if (solutions > 1) {
+      grid[row][column] = a;
+      grid[column][row] = b;
+    } else {
+      grid[row][column] = 0;
+      grid[column][row] = 0;
+    }
+    if (performance.now() - start > 100) {
+      i = 10000000;
+    }
+  }
+  // clear a bit more
+  for(let i=0; i<20; i++){
+    let row = Math.floor(Math.random()*width);
+    let column = Math.floor(Math.random()*height);
+    let a = grid[row][column];
+    grid[row][column] = 0;
+    let solutions = countSolutions(grid);
+    if (solutions > 1) {
+      grid[row][column] = a;
+    } else {
+      grid[row][column] = 0;
+    }
+  }
+  return grid;
+}
+
+function hasSingleSolution(grid){
   if (column >= width){
-    row = row + 1;
+    row++;
     column=0;
   }
   if (row >= height){
@@ -94,128 +158,9 @@ function solve(grid, row, column){
   return false;
 }
 
-function columnIsValid(grid, column){
-  let values = {};
-  for(let i=0; i < height; i++){
-    let v = grid[i][column];
-    if (v > 0 && values[v]) { return false; }
-    values[v] = true;
-  }
-  return true;
-}
-
-function rowIsValid(grid, row){
-  let values = {};
-  for(let i=0; i < height; i++){
-    let v = grid[row][i];
-    if (v > 0 && values[v]) { return false; }
-    values[v] = true;
-  }
-  return true;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function isComplete(grid){
-  for(let row = 0; row < height; row++) {
-    for(let column = 0; column < width; column++) {
-      if (!grid[row][column]) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-// function rowIsValid(row, grid){
-//   let values = {};
-//   for(let column = 0; column < width; column++) {
-//     let value = grid[row][column];
-//     if (value > 0){
-//       if (values[value]){
-//         return false;
-//       }
-//       values[value] = true;
-//     }
-//   }
-//   return true;
-// }
-
-function columnIsValidXXX(column, grid){
-  let values = {};
-  for(let row = 0; row < height; row++) {
-    let value = grid[row][column];
-    if (value > 0){
-      if (values[value]){
-        return false;
-      }
-      values[value] = true;
-    }
-  }
-  return true;
-}
-
-function blockIsValid(rowIndex, columnIndex, grid){
-  let values = {};
-  for(let row = rowIndex; row < rowIndex + gridSize; row++) {
-    for(let column = columnIndex; column < columnIndex + gridSize; column++){
-      let value = grid[row][column];
-      if (value > 0){
-        if (values[value]){
-          return false;
-        }
-        values[value] = true;
-      }
-    }
-  }
-  return true;
-}
-
-
-function solvexxx(grid, column, row){
-  if (column >= width){
-    row++;
-    column = 0
-  }
-  if (row >= height){
-    return true;
-  }
-  for(let i=1; i <= range; i++){
-    grid[row][column] = i;
-    if (rowIsValid(row, grid)
-      && columnIsValid(column-1, grid)
-      && blockIsValid(Math.floor(row / gridSize), Math.floor(column / gridSize), grid)
-      ){
-      if (solve(grid, column+1, row)){
-        return true;
-      }
-    }
-  }
-  grid[row][column] = null;
-  return false;
-}
-
-
+// ----------------------------------------------------------------------------
+// Reducers
+// ----------------------------------------------------------------------------
 
 let defaultState = {
   grid: [],
@@ -223,7 +168,6 @@ let defaultState = {
 for (let i = 0 ; i < width; i++) {
   defaultState.grid.push([]);
 }
-
 
 export function sudoku(state = defaultState, action){
 

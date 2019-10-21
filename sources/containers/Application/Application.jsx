@@ -10,9 +10,7 @@ export class Application extends React.Component {
   }
 
   render(){
-    console.log(this.props)
     let {grid} = this.props.sudoku;
-    console.log(grid)
     return (
       <div className="sudoku">
         <header>
